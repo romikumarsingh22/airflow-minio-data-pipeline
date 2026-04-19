@@ -4,14 +4,14 @@ from datetime import datetime
 import pandas as pd
 import sys
 
-# Add scripts folder to path
+
 sys.path.append('/opt/airflow/scripts')
 
-from transform import transform_data   # ✅ import your updated script
+from transform import transform_data   
 
 DATA_PATH = "/opt/airflow/data/final_email_thread_dataset.csv"
 
-# ------------------ TASK 1: INGEST ------------------
+
 def ingest_data(**context):
     print("Reading CSV...")
     df = pd.read_csv(DATA_PATH)
@@ -20,7 +20,7 @@ def ingest_data(**context):
     context['ti'].xcom_push(key='data', value=df.to_json())
 
 
-# ------------------ TASK 2: VALIDATE ------------------
+
 def validate_data(**context):
     print("Validating data...")
 
@@ -30,17 +30,17 @@ def validate_data(**context):
     expected_columns = ["thread_id", "thread_text", "summary"]
 
     if list(df.columns) != expected_columns:
-        raise ValueError("Schema mismatch ❌")
+        raise ValueError("Schema mismatch ")
 
     if df.isnull().sum().sum() > 0:
-        raise ValueError("Null values found ❌")
+        raise ValueError("Null values found ")
 
-    print("Validation passed ✅")
+    print("Validation passed ")
 
     context['ti'].xcom_push(key='validated_data', value=df.to_json())
 
 
-# ------------------ DAG ------------------
+
 with DAG(
     dag_id="email_pipeline",
     start_date=datetime(2024, 1, 1),
@@ -58,7 +58,7 @@ with DAG(
         python_callable=validate_data
     )
 
-    # ✅ NOW using your transform.py (with MinIO upload)
+    
     transform = PythonOperator(
         task_id="transform",
         python_callable=transform_data
